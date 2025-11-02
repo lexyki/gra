@@ -1,0 +1,219 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+class WordGuessGame
+{
+    static void Main(string[] args)
+    {
+        Console.WriteLine("=== GRA 'VGADATI SLOVO' ===");
+        
+        // Stvoriuemo masiv angliis'kih sliv
+        string[] words = {
+            "apple", "banana", "orange", "kitten", "puppy",
+            "computer", "program", "language", "developer", 
+            "keyboard", "mouse", "monitor", "system", "network",
+            "security", "garden", "window", "coffee", "guitar",
+            "piano", "sunshine", "weather", "bicycle", "rocket"
+        };
+        
+        // Vibiramo vipadkove slovo
+        Random random = new Random();
+        string secretWord = words[random.Next(0, words.Length)];
+        
+        int maxAttempts = 5;
+        int attemptsLeft = maxAttempts;
+        List<char> guessedLetters = new List<char>();
+        List<char> incorrectLetters = new List<char>();
+        
+        Console.WriteLine($"\nSlovo mae {secretWord.Length} liter: {DisplayWord(secretWord, guessedLetters)}");
+        Console.WriteLine($"U vas {maxAttempts} sprob");
+        
+        // Osnovnii cikl gri
+        while (attemptsLeft > 0)
+        {
+            Console.WriteLine($"\n--- Sprob zalishilos: {attemptsLeft} ---");
+            
+            // Pokazuemo nevirni literi, iakscho voni e
+            if (incorrectLetters.Count > 0)
+            {
+                Console.WriteLine($"Nevirni literi: {string.Join(", ", incorrectLetters)}");
+            }
+            
+            // Zapituemo literu u koristuvacha
+            Console.Write("Vvedit literu: ");
+            string input = Console.ReadLine()?.ToLower();
+            
+            // Perevirka korektnosti vvedennya
+            if (string.IsNullOrEmpty(input))
+            {
+                Console.WriteLine("❌ Bud' laska, vvedit literu!");
+                continue;
+            }
+            
+            if (input.Length != 1)
+            {
+                Console.WriteLine("❌ Bud' laska, vvedit tilki odnu literu!");
+                continue;
+            }
+            
+            char letter = input[0];
+            
+            if (!char.IsLetter(letter))
+            {
+                Console.WriteLine("❌ Ce ne litera! Bud' laska, vvedit literu a-z.");
+                continue;
+            }
+            
+            // Perevirka chy vzhe vgaduvali ciu literu
+            if (guessedLetters.Contains(letter) || incorrectLetters.Contains(letter))
+            {
+                Console.WriteLine($"❌ Vi vzhe vvodili literu '{letter}'!");
+                continue;
+            }
+            
+            // Perevirka chy e litera u slovi
+            if (secretWord.Contains(letter))
+            {
+                guessedLetters.Add(letter);
+                Console.WriteLine($"✅ Vitaiemo! Litera '{letter}' e u slovi.");
+                
+                // Pokazuemo potochnii stan slova
+                string currentDisplay = DisplayWord(secretWord, guessedLetters);
+                Console.WriteLine($"Potochnii stan: {currentDisplay}");
+                
+                // Perevirka chy slovo povnistiu vgadane
+                if (IsWordGuessed(secretWord, guessedLetters))
+                {
+                    Console.WriteLine($"\n🎉 VITAIEMO! Vi vgadali slovo '{secretWord.ToUpper()}'!");
+                    Console.WriteLine($"💯 Vi vigrali z {attemptsLeft} sproboiu(ami) v zapasi!");
+                    return;
+                }
+            }
+            else
+            {
+                // Literi nemae u slovi
+                attemptsLeft--;
+                incorrectLetters.Add(letter);
+                Console.WriteLine($"❌ Literi '{letter}' nemae u slovi.");
+                Console.WriteLine($"Sprob zalishilos: {attemptsLeft}");
+                
+                // Pokazuemo potochnii stan slova
+                string currentDisplay = DisplayWord(secretWord, guessedLetters);
+                Console.WriteLine($"Potochnii stan: {currentDisplay}");
+                
+                // Pokazuemo vishalku (vizualne predstavlennya pomilok)
+                DisplayHangman(maxAttempts - attemptsLeft);
+            }
+        }
+        
+        // Iakscho sprobi zakinchenis
+        Console.WriteLine($"\n💀 GRA ZAKINCHENA! Vi prograli.");
+        Console.WriteLine($"🔍 Slovo bulo: '{secretWord.ToUpper()}'");
+        DisplayHangman(maxAttempts); // Pokazuemo povnu vishalku
+    }
+    
+    // Vidobrazhennya slova z vgadanimi literami
+    static string DisplayWord(string word, List<char> guessedLetters)
+    {
+        string result = "";
+        foreach (char letter in word)
+        {
+            if (guessedLetters.Contains(letter))
+            {
+                result += letter + " ";
+            }
+            else
+            {
+                result += "_ ";
+            }
+        }
+        return result.Trim();
+    }
+    
+    // Perevirka chy slovo povnistiu vgadane
+    static bool IsWordGuessed(string word, List<char> guessedLetters)
+    {
+        foreach (char letter in word)
+        {
+            if (!guessedLetters.Contains(letter))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    // Vizualne vidobrazhennya vishalki
+    static void DisplayHangman(int wrongAttempts)
+    {
+        Console.WriteLine("\nVishalka:");
+        
+        switch (wrongAttempts)
+        {
+            case 0:
+                Console.WriteLine("  ____");
+                Console.WriteLine(" |    |");
+                Console.WriteLine(" |");
+                Console.WriteLine(" |");
+                Console.WriteLine(" |");
+                Console.WriteLine(" |");
+                Console.WriteLine("_|___");
+                break;
+            case 1:
+                Console.WriteLine("  ____");
+                Console.WriteLine(" |    |");
+                Console.WriteLine(" |    O");
+                Console.WriteLine(" |");
+                Console.WriteLine(" |");
+                Console.WriteLine(" |");
+                Console.WriteLine("_|___");
+                break;
+            case 2:
+                Console.WriteLine("  ____");
+                Console.WriteLine(" |    |");
+                Console.WriteLine(" |    O");
+                Console.WriteLine(" |    |");
+                Console.WriteLine(" |");
+                Console.WriteLine(" |");
+                Console.WriteLine("_|___");
+                break;
+            case 3:
+                Console.WriteLine("  ____");
+                Console.WriteLine(" |    |");
+                Console.WriteLine(" |    O");
+                Console.WriteLine(" |   /|");
+                Console.WriteLine(" |");
+                Console.WriteLine(" |");
+                Console.WriteLine("_|___");
+                break;
+            case 4:
+                Console.WriteLine("  ____");
+                Console.WriteLine(" |    |");
+                Console.WriteLine(" |    O");
+                Console.WriteLine(" |   /|\\");
+                Console.WriteLine(" |");
+                Console.WriteLine(" |");
+                Console.WriteLine("_|___");
+                break;
+            case 5:
+                Console.WriteLine("  ____");
+                Console.WriteLine(" |    |");
+                Console.WriteLine(" |    O");
+                Console.WriteLine(" |   /|\\");
+                Console.WriteLine(" |   /");
+                Console.WriteLine(" |");
+                Console.WriteLine("_|___");
+                break;
+            case 6:
+                Console.WriteLine("  ____");
+                Console.WriteLine(" |    |");
+                Console.WriteLine(" |    O");
+                Console.WriteLine(" |   /|\\");
+                Console.WriteLine(" |   / \\");
+                Console.WriteLine(" |");
+                Console.WriteLine("_|___");
+                break;
+        }
+    }
+}
