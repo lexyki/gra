@@ -1,0 +1,161 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+class NumberGuessGame
+{
+    static void Main(string[] args)
+    {
+        Console.WriteLine("=== GRA 'VGADATI CHISLO' ===");
+        
+        // Generuemo vipadkove chislo z 5-6 cifr
+        Random random = new Random();
+        int numberLength = random.Next(5, 7); // 5 abo 6 cifr
+        string secretNumber = "";
+        
+        for (int i = 0; i < numberLength; i++)
+        {
+            secretNumber += random.Next(0, 10).ToString();
+        }
+        
+        int maxAttempts = 5;
+        int attemptsLeft = maxAttempts;
+        List<char> guessedDigits = new List<char>();
+        List<char> incorrectDigits = new List<char>();
+        
+        Console.WriteLine($"\nChislo mae {secretNumber.Length} cifr: {DisplayNumber(secretNumber, guessedDigits)}");
+        Console.WriteLine($"U vas {maxAttempts} sprob");
+        
+        // Osnovnii cikl gri
+        while (attemptsLeft > 0)
+        {
+            Console.WriteLine($"\n--- Sprob zalishilos: {attemptsLeft} ---");
+            
+            // Pokazuemo nevirni cifri, iakscho voni e
+            if (incorrectDigits.Count > 0)
+            {
+                Console.WriteLine($"Nevirni cifri: {string.Join(", ", incorrectDigits)}");
+            }
+            
+            // Pokazuemo potochnii stan chisla
+            string currentDisplay = DisplayNumber(secretNumber, guessedDigits);
+            Console.WriteLine($"Potochnii stan: {currentDisplay}");
+            
+            // Zapituemo cifru u koristuvacha
+            Console.Write("Vvedit cifru (0-9): ");
+            string input = Console.ReadLine();
+            
+            // Perevirka korektnosti vvedennya
+            if (string.IsNullOrEmpty(input))
+            {
+                Console.WriteLine("Pomilka: Bud' laska, vvedit cifru!");
+                continue;
+            }
+            
+            if (input.Length != 1)
+            {
+                Console.WriteLine("Pomilka: Bud' laska, vvedit tilki odnu cifru!");
+                continue;
+            }
+            
+            char digit = input[0];
+            
+            if (!char.IsDigit(digit))
+            {
+                Console.WriteLine("Pomilka: Ce ne cifra! Bud' laska, vvedit cifru vid 0 do 9.");
+                continue;
+            }
+            
+            // Perevirka chy vzhe vgaduvali ciu cifru
+            if (guessedDigits.Contains(digit) || incorrectDigits.Contains(digit))
+            {
+                Console.WriteLine($"Uvaga: Vi vzhe vvodili cifru '{digit}'!");
+                continue;
+            }
+            
+            // Perevirka chy e cifra u chisli
+            if (secretNumber.Contains(digit))
+            {
+                guessedDigits.Add(digit);
+                Console.WriteLine($"Vpravu! Cifra '{digit}' e u chisli.");
+                
+                // Pokazuemo potochnii stan chisla
+                currentDisplay = DisplayNumber(secretNumber, guessedDigits);
+                Console.WriteLine($"Potochnii stan: {currentDisplay}");
+                
+                // Perevirka chy chislo povnistiu vgadane
+                if (IsNumberGuessed(secretNumber, guessedDigits))
+                {
+                    Console.WriteLine($"\nVITAIEMO! Vi vgadali chislo '{secretNumber}'!");
+                    Console.WriteLine($"Vi vigrali z {attemptsLeft} sproboiu(ami) v zapasi!");
+                    return;
+                }
+            }
+            else
+            {
+                // Cifri nemae u chisli
+                attemptsLeft--;
+                incorrectDigits.Add(digit);
+                Console.WriteLine($"Cifri '{digit}' nemae u chisli.");
+                Console.WriteLine($"Sprob zalishilos: {attemptsLeft}");
+                
+                // Pokazuemo vizualnu indikaciyu pomilok
+                DisplayAttempts(attemptsLeft, maxAttempts);
+            }
+        }
+        
+        // Iakscho sprobi zakinchenis
+        Console.WriteLine($"\nGRA ZAKINCHENA! Vi prograli.");
+        Console.WriteLine($"Chislo bulo: '{secretNumber}'");
+        DisplayAttempts(0, maxAttempts);
+    }
+    
+    // Vidobrazhennya chisla z vgadanimi ciframi
+    static string DisplayNumber(string number, List<char> guessedDigits)
+    {
+        string result = "";
+        foreach (char digit in number)
+        {
+            if (guessedDigits.Contains(digit))
+            {
+                result += digit + " ";
+            }
+            else
+            {
+                result += "_ ";
+            }
+        }
+        return result.Trim();
+    }
+    
+    // Perevirka chy chislo povnistiu vgadane
+    static bool IsNumberGuessed(string number, List<char> guessedDigits)
+    {
+        foreach (char digit in number)
+        {
+            if (!guessedDigits.Contains(digit))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    // Vizualne vidobrazhennya kilkosti sprob
+    static void DisplayAttempts(int attemptsLeft, int maxAttempts)
+    {
+        Console.Write($"Sprob: [");
+        for (int i = 0; i < maxAttempts; i++)
+        {
+            if (i < attemptsLeft)
+            {
+                Console.Write("+");
+            }
+            else
+            {
+                Console.Write("-");
+            }
+        }
+        Console.WriteLine("]");
+    }
+}
